@@ -2,7 +2,7 @@
 ; Created with Inno Setup
 
 #define MyAppName "Teams Cache Cleaner"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "S.C. Swiderski, LLC"
 #define MyAppURL "https://github.com/SC-Swiderski-LLC/Teams-Cache-Cleaner"
 #define MyAppExeName "TeamsCacheCleaner.exe"
