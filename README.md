@@ -42,11 +42,11 @@ Clearing the Teams cache can help resolve:
 1. Clone or download this repository
 2. Install required packages:
    ```
-   pip install cx_Freeze
+   pip install psutil
    ```
 3. Run the build command:
    ```
-   python setup.py build
+   pyinstaller --clean --onefile --windowed --icon=data-cleaning.ico --name="TeamsCacheCleaner" --add-data="data-cleaning.ico;." --hidden-import "psutil" teams_cache_cleaner.py
    ```
 4. The executable will be created in the `build` directory
 
