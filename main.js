@@ -8,6 +8,7 @@ const teamsCachePath = path.join(os.homedir(), 'AppData', 'Local', 'Packages', '
 
 let mainWindow;
 
+// In your main.js, modify the createWindow function:
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 500,
@@ -15,13 +16,14 @@ function createWindow() {
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      // Add this to ensure paths resolve correctly
+      additionalArguments: [`--app-path=${app.getAppPath()}`]
     },
-    icon: path.join(__dirname, 'assets/icon.ico')
+    icon: path.join(app.getAppPath(), 'assets/icon.ico')
   });
 
-  mainWindow.loadFile('index.html');
-  // Uncomment to open DevTools for debugging
+  mainWindow.loadFile(path.join(app.getAppPath(), 'index.html'));
   // mainWindow.webContents.openDevTools();
 }
 
@@ -38,6 +40,21 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+// Add at the top of your main.js file
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    
+    // Create a log file in the user's temp directory
+    const logPath = path.join(os.tmpdir(), 'teamscachecleaner-error.log');
+    fs.writeFileSync(logPath, `${new Date().toISOString()}\n${error.stack}`, { flag: 'a' });
+    
+    // Show error to user
+    if (mainWindow) {
+      mainWindow.webContents.send('log-message', `ERROR: ${error.message}`);
+      mainWindow.webContents.send('cache-cleared', false);
+    }
+  });
 
 ipcMain.on('close-teams', (event) => {
     event.reply('log-message', `Running as user: ${currentUser}`);
