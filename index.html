@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Teams Cache Cleaner</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    .description {
+      margin-bottom: 20px;
+    }
+    .path-display {
+      margin-bottom: 15px;
+    }
+    .progress-container {
+      margin-bottom: 10px;
+    }
+    progress {
+      width: 100%;
+      height: 20px;
+    }
+    .status {
+      margin-bottom: 15px;
+    }
+    .log-container {
+      margin-top: 15px;
+    }
+    .log {
+      height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-family: monospace;
+      background-color: #f5f5f5;
+    }
+    .buttons {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: #e1e1e1;
+      border: none;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 14px;
+    }
+    #cleanBtn {
+      flex-grow: 2;
+    }
+    #exitBtn {
+      flex-grow: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Microsoft Teams Cache Cleaner</h1>
+    <div class="description">
+      This utility clears the Microsoft Teams cache folders to help resolve common issues like:
+      <ul>
+        <li>Sign-in problems</li>
+        <li>Messages not sending</li>
+        <li>Calls or meetings not connecting</li>
+        <li>Interface display problems</li>
+        <li>General performance issues</li>
+      </ul>
+    </div>
+    
+    <div class="path-display">
+      <div><strong>Current Teams path:</strong></div>
+      <div id="pathValue"></div>
+    </div>
+    
+    <div class="progress-container">
+      <progress id="progressBar" value="0" max="100"></progress>
+    </div>
+    
+    <div class="status">
+      <div id="statusLabel">Ready</div>
+    </div>
+    
+    <div class="log-container">
+      <div><strong>Activity Log:</strong></div>
+      <div class="log" id="logDisplay"></div>
+    </div>
+    
+    <div class="buttons">
+      <button id="cleanBtn">Clean Teams Cache</button>
+      <button id="exitBtn">Exit</button>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const os = require('os');
+    const path = require('path');
+    
+    // Get element references
+    const pathValue = document.getElementById('pathValue');
+    const progressBar = document.getElementById('progressBar');
+    const statusLabel = document.getElementById('statusLabel');
+    const logDisplay = document.getElementById('logDisplay');
+    const cleanBtn = document.getElementById('cleanBtn');
+    const exitBtn = document.getElementById('exitBtn');
+    
+    // Set cache path
+    const teamsCachePath = path.join(os.homedir(), 'AppData', 'Local', 'Packages', 'MSTeams_8wekyb3d8bbwe');
+    pathValue.textContent = teamsCachePath;
+    
+    // Add log message
+    function addLog(message) {
+      const logEntry = document.createElement('div');
+      logEntry.textContent = message;
+      logDisplay.appendChild(logEntry);
+      logDisplay.scrollTop = logDisplay.scrollHeight;
+    }
+    
+    // Update status
+    function updateStatus(message, progress) {
+      statusLabel.textContent = message;
+      if (progress !== undefined) {
+        progressBar.value = progress;
+      }
+      addLog(message);
+    }
+    
+    // Handle clean button click
+    cleanBtn.addEventListener('click', () => {
+      // Disable button
+      cleanBtn.disabled = true;
+      
+      // Clear log
+      logDisplay.innerHTML = '';
+      
+      // Start cleaning process
+      updateStatus('Starting...', 0);
+      
+      // First close Teams
+      updateStatus('Checking if Teams is running...', 10);
+      ipcRenderer.send('close-teams');
+    });
+    
+    // Handle exit button click
+    exitBtn.addEventListener('click', () => {
+      window.close();
+    });
+    
+    // Handle IPC responses
+    ipcRenderer.on('log-message', (event, message) => {
+      addLog(message);
+    });
+    
+    ipcRenderer.on('teams-closed', (event, success) => {
+      if (success) {
+        updateStatus('Teams processes successfully terminated.', 20);
+      } else {
+        updateStatus('Warning: Teams may still be running, proceeding anyway...', 20);
+      }
+      
+      // Proceed to cache clearing
+      updateStatus('Clearing Teams cache directory...', 40);
+      ipcRenderer.send('clear-cache');
+    });
+    
+    ipcRenderer.on('cache-cleared', (event, success) => {
+      if (success) {
+        updateStatus('Cache clearing completed successfully!', 100);
+        // Show message box
+        alert('Teams cache has been cleared successfully.\n\nYou can now restart Teams and sign in again.');
+      } else {
+        updateStatus('Cache clearing completed with some issues.', 100);
+        // Show warning
+        alert('The Teams cache was cleared, but there may have been some issues.\n\nPlease check the log for details.');
+      }
+      
+      // Re-enable button
+      cleanBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
