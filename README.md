@@ -68,3 +68,7 @@ Clearing the Teams cache can help resolve:
 - This application only clears the cache for the new Microsoft Teams app (Teams 2.0)
 - The cache location is: `C:\Users\{username}\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe`
 - The application must be run with user privileges (not elevated/admin)
+
+## Attributions
+
+<a href="https://www.flaticon.com/free-icons/data-cleaning" title="data-cleaning icons">Data-cleaning icons created by Freepik - Flaticon</a>
