@@ -25,4 +25,10 @@ Teams Cache Cleaner helps resolve frequent Microsoft Teams problems by safely cl
 
 No special permissions required. This utility is designed for the new Microsoft Teams (Teams 2.0) client.
 
+### ⚠️ Important Disclaimer:
+This tool essentially resets Microsoft Teams back to default settings. After using it:
+* You will/may need to sign in again
+* Any custom/modified settings will be reset to default values
+* Previously downloaded files and shared data will remain intact
+
 *Support: Contact the IT Help Desk if you need assistance*
