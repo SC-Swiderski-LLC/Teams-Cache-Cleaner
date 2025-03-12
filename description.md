@@ -23,7 +23,7 @@ Teams Cache Cleaner helps resolve frequent Microsoft Teams problems by safely cl
 3. Wait for confirmation
 4. Restart Microsoft Teams
 
-No special permissions required. This utility is designed for the new Microsoft Teams (Teams 2.0) client.
+No special permissions required. This utility is designed for the new Microsoft Teams client.
 
 ### ⚠️ Important Disclaimer:
 This tool essentially resets Microsoft Teams back to default settings. After using it:
