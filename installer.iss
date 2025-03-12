@@ -38,7 +38,7 @@ CloseApplications=yes
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
 ; Include all files from win-unpacked directory
@@ -49,6 +49,14 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
+[Registry]
+; Add registry entries for Intune detection
+Root: HKLM; Subkey: "SOFTWARE\S.C. Swiderski\Teams Cache Cleaner"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "SOFTWARE\S.C. Swiderski\Teams Cache Cleaner"; ValueType: string; ValueName: "Version"; ValueData: "{#MyAppVersion}"
+Root: HKLM; Subkey: "SOFTWARE\S.C. Swiderski\Teams Cache Cleaner"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}"
+Root: HKLM; Subkey: "SOFTWARE\S.C. Swiderski\Teams Cache Cleaner"; ValueType: string; ValueName: "Publisher"; ValueData: "{#MyAppPublisher}"
+; Add version in a separate location for easier detection
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#MyAppName}_is1"; ValueType: string; ValueName: "DisplayVersion"; ValueData: "{#MyAppVersion}"; Flags: createvalueifdoesntexist
 
 [UninstallRun]
 Filename: "taskkill.exe"; Parameters: "/f /im ""{#MyAppExeName}"""; Flags: runhidden
@@ -61,4 +69,13 @@ begin
   // Check if the app is already running and close it before installation
   Exec('taskkill.exe', '/f /im "{#MyAppExeName}"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Result := True;
+end;
+
+// This ensures that desktop shortcut task is unchecked by default during silent installations
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  // Skip desktop icon page in silent mode
+  if (PageID = wpSelectTasks) and WizardSilent then
+    WizardSelectTasks('');
+  Result := False;
 end;
