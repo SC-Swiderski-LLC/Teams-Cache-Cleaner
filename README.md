@@ -34,21 +34,25 @@ Clearing the Teams cache can help resolve:
 ## Building from Source
 
 ### Prerequisites
-- Python 3.7 or higher
-- Required packages: `cx_Freeze` (for building the executable)
+- Node.js 14.x or higher
+- npm package manager
 
 ### Steps to Build
 
 1. Clone or download this repository
-2. Install required packages:
+2. Install dependencies:
    ```
-   pip install psutil
+   npm install
    ```
-3. Run the build command:
+3. Run the application in development mode:
    ```
-   pyinstaller --clean --onefile --windowed --icon=data-cleaning.ico --name="TeamsCacheCleaner" --add-data="data-cleaning.ico;." --hidden-import "psutil" teams_cache_cleaner.py
+   npm start
    ```
-4. The executable will be created in the `build` directory
+4. Build the executable:
+   ```
+   npm run build
+   ```
+5. The executable will be created in the `dist` directory
 
 ## Deployment Options
 
@@ -63,11 +67,29 @@ Clearing the Teams cache can help resolve:
 - Place the executable on a network share accessible to all users
 - Create a shortcut for easy access
 
+### Option 4: Use the Installer
+- Run the provided installer (TeamsCacheCleaner_Setup.exe)
+- The installer will create start menu shortcuts and registry entries for detection
+
 ## Notes
 
 - This application only clears the cache for the new Microsoft Teams app (Teams 2.0)
 - The cache location is: `C:\Users\{username}\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe`
 - The application must be run with user privileges (not elevated/admin)
+
+## Development
+
+This application is built with Electron.js, which allows for cross-platform desktop applications using web technologies.
+
+### Project Structure
+- `main.js` - Main process responsible for creating windows and handling file system operations
+- `index.html` - User interface
+- `package.json` - Project configuration and dependencies
+- `installer.iss` - Inno Setup script for creating Windows installer
+
+## License
+
+MIT
 
 ## Attributions
 
