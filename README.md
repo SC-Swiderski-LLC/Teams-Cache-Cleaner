@@ -63,11 +63,7 @@ TeamsCacheCleaner_Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /TASKS="des
 #### Steps to Deploy via Intune
 
 1. **Prepare the installer package**:
-   - Upload the TeamsCacheCleaner_Setup.exe to a location accessible by Intune
-
-2. **Create a new Win32 app**:
-   - In Endpoint Manager, go to Apps > Windows > Add > Windows app (Win32)
-   - Upload the installer file and provide required information
+   - Prepare the TeamsCacheCleaner_Setup.exe with the [Win32 content prep tool](https://github.com/Microsoft/Microsoft-Win32-Content-Prep-Tool)
 
 3. **Configure installation commands**:
    - Install command: `TeamsCacheCleaner_Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`
