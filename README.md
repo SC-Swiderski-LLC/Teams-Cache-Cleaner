@@ -26,66 +26,78 @@ Clearing the Teams cache can help resolve:
 
 ## Usage Instructions
 
-1. Download and run the TeamsCacheCleaner.exe file
-2. Click the "Clean Teams Cache" button
+1. Download and run the current provided installer from the releases page
+2. Run the app and click the **Clean Teams Cache** button
 3. Wait for the process to complete
 4. Restart Microsoft Teams
 
-## Building from Source
+## Installation Options
 
-### Prerequisites
-- Node.js 14.x or higher
-- npm package manager
+### Standard Installation
+- Run the TeamsCacheCleaner_Setup.exe installer
+- Follow the on-screen instructions
 
-### Steps to Build
+### Silent Installation via Command Line
+Install Teams Cache Cleaner silently without any user interaction using the following command:
 
-1. Clone or download this repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Run the application in development mode:
-   ```
-   npm start
-   ```
-4. Build the executable:
-   ```
-   npm run build
-   ```
-5. The executable will be created in the `dist` directory
+```
+TeamsCacheCleaner_Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+```
 
-## Deployment Options
+Additional command line parameters:
+- `/DIR="x:\dirname"` - Overrides the default installation directory
+- `/NOICONS` - Prevents creation of Start Menu shortcuts
+- `/TASKS="desktopicon"` - Creates a desktop shortcut (not created by default in silent mode)
 
-### Option 1: Direct Distribution
-- Share the executable with users who can run it from their desktop
+Example with desktop icon:
+```
+TeamsCacheCleaner_Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /TASKS="desktopicon"
+```
 
-### Option 2: Add to Company Portal
-- Package the executable for deployment through Microsoft Intune
-- Make it available in the Company Portal for users to install when needed
+### Microsoft Intune Deployment
 
-### Option 3: Network Share
-- Place the executable on a network share accessible to all users
-- Create a shortcut for easy access
+#### Prerequisites
+- Access to Microsoft Endpoint Manager admin center
+- The TeamsCacheCleaner_Setup.exe installer file
 
-### Option 4: Use the Installer
-- Run the provided installer (TeamsCacheCleaner_Setup.exe)
-- The installer will create start menu shortcuts and registry entries for detection
+#### Steps to Deploy via Intune
+
+1. **Prepare the installer package**:
+   - Upload the TeamsCacheCleaner_Setup.exe to a location accessible by Intune
+
+2. **Create a new Win32 app**:
+   - In Endpoint Manager, go to Apps > Windows > Add > Windows app (Win32)
+   - Upload the installer file and provide required information
+
+3. **Configure installation commands**:
+   - Install command: `TeamsCacheCleaner_Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`
+   - Uninstall command: `"{app}\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`
+
+4. **Configure detection rules**:
+   - Rule type: Registry
+   - Key path: `HKEY_LOCAL_MACHINE\SOFTWARE\S.C. Swiderski\Teams Cache Cleaner`
+   - Value name: `Version`
+   - Detection method: String comparison
+   - Operator: Equals
+   - Value: `1.0.1` (or current version)
+
+5. **Requirements and assignments**:
+   - Set requirements (OS version, etc.)
+   - Assign to users or devices as needed
+   - Configure availability in Company Portal
 
 ## Notes
 
-- This application only clears the cache for the new Microsoft Teams app (Teams 2.0)
+- This application only clears the cache for the new Teams app
 - The cache location is: `C:\Users\{username}\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe`
 - The application must be run with user privileges (not elevated/admin)
 
-## Development
+## ⚠️ Important Disclaimer
 
-This application is built with Electron.js, which allows for cross-platform desktop applications using web technologies.
-
-### Project Structure
-- `main.js` - Main process responsible for creating windows and handling file system operations
-- `index.html` - User interface
-- `package.json` - Project configuration and dependencies
-- `installer.iss` - Inno Setup script for creating Windows installer
+This tool essentially resets Microsoft Teams back to default settings. After using it:
+- You will need to sign in again
+- Any custom/modified settings will be reset to default values
+- Previously downloaded files and shared data will remain intact
 
 ## License
 
