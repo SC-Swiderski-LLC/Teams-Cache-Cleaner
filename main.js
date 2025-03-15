@@ -5,6 +5,8 @@ const { exec } = require('child_process');
 const os = require('os');
 const currentUser = os.userInfo().username;
 const teamsCachePath = path.join(os.homedir(), 'AppData', 'Local', 'Packages', 'MSTeams_8wekyb3d8bbwe');
+// Define the specific LocalCache path to clear
+const teamsLocalCachePath = path.join(teamsCachePath, 'LocalCache');
 
 let mainWindow;
 
@@ -17,7 +19,9 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(__dirname, 'assets', 'icon.ico')
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    frame: false,
+    titleBarStyle: 'hidden'
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
@@ -60,7 +64,8 @@ process.on('uncaughtException', (error) => {
 
 ipcMain.on('close-teams', (event) => {
   event.reply('log-message', `Running as user: ${currentUser}`);
-  event.reply('log-message', `Teams cache path: ${teamsCachePath}`);
+  event.reply('log-message', `Teams path: ${teamsCachePath}`);
+  event.reply('log-message', `LocalCache path to clear: ${teamsLocalCachePath}`);
 
   // First check for any Teams-related processes using a broader approach
   event.reply('log-message', 'Checking for Teams processes...');
@@ -159,7 +164,7 @@ function terminateTeamsProcesses(event, processes) {
 }
 
 ipcMain.on('clear-cache', (event) => {
-  // Check if path exists
+  // Check if Teams path exists
   if (!fs.existsSync(teamsCachePath)) {
     event.reply('log-message', `Teams installation not found at ${teamsCachePath}`);
     event.reply('log-message', 'Checking alternative location...');
@@ -175,37 +180,52 @@ ipcMain.on('clear-cache', (event) => {
     return;
   }
   
+  // Check if LocalCache path exists
+  if (!fs.existsSync(teamsLocalCachePath)) {
+    event.reply('log-message', `LocalCache folder not found at ${teamsLocalCachePath}`);
+    event.reply('log-message', 'Creating LocalCache directory...');
+    
+    try {
+      fs.mkdirSync(teamsLocalCachePath, { recursive: true });
+      event.reply('log-message', 'Created LocalCache directory');
+    } catch (mkdirErr) {
+      event.reply('log-message', `Error creating LocalCache directory: ${mkdirErr.message}`);
+      event.reply('cache-cleared', false);
+      return;
+    }
+  }
+  
   // Wait a moment to make sure file handles are released
   event.reply('log-message', 'Waiting for file handles to be released...');
   setTimeout(() => {
-    clearTeamsCache(event);
+    clearTeamsLocalCache(event);
   }, 2000);
 });
 
-function clearTeamsCache(event) {
-  event.reply('log-message', `Clearing Teams cache at: ${teamsCachePath}`);
+function clearTeamsLocalCache(event) {
+  event.reply('log-message', `Clearing Teams LocalCache at: ${teamsLocalCachePath}`);
   
   // Try with simple delete first
   try {
     // First try with direct command line delete
-    event.reply('log-message', 'Attempting to clear cache with system command...');
+    event.reply('log-message', 'Attempting to clear LocalCache with system command...');
     
-    // Use rd command to forcefully remove directory contents
-    const rdCmd = `rd /s /q "${teamsCachePath}"`;
+    // Use rd command to forcefully remove LocalCache directory contents
+    const rdCmd = `rd /s /q "${teamsLocalCachePath}"`;
     exec(rdCmd, (rdError, stdout, stderr) => {
       if (rdError) {
         event.reply('log-message', `Command failed: ${rdError.message}`);
         event.reply('log-message', 'Switching to detailed file-by-file deletion...');
         
         // Fall back to detailed recursive deletion
-        deleteContentsRecursively(event, teamsCachePath);
+        deleteContentsRecursively(event, teamsLocalCachePath);
       } else {
-        event.reply('log-message', 'Successfully removed Teams cache directory');
+        event.reply('log-message', 'Successfully removed Teams LocalCache directory');
         
-        // Recreate the Teams directory
+        // Recreate the LocalCache directory
         try {
-          fs.mkdirSync(teamsCachePath, { recursive: true });
-          event.reply('log-message', 'Recreated Teams directory structure');
+          fs.mkdirSync(teamsLocalCachePath, { recursive: true });
+          event.reply('log-message', 'Recreated LocalCache directory structure');
           event.reply('cache-cleared', true);
         } catch (mkdirErr) {
           event.reply('log-message', `Error recreating directory: ${mkdirErr.message}`);
@@ -216,7 +236,7 @@ function clearTeamsCache(event) {
   } catch (error) {
     event.reply('log-message', `Error executing rd command: ${error.message}`);
     // Fall back to detailed recursive deletion
-    deleteContentsRecursively(event, teamsCachePath);
+    deleteContentsRecursively(event, teamsLocalCachePath);
   }
 }
 
@@ -253,9 +273,9 @@ function deleteContentsRecursively(event, folderPath) {
           }
         });
         
-        // Delete the empty directory
+        // Delete the empty directory - but don't delete the LocalCache root
         try {
-          if (folderPath !== teamsCachePath) {
+          if (folderPath !== teamsLocalCachePath) {
             fs.rmdirSync(folderPath);
           }
         } catch (err) {
@@ -276,14 +296,14 @@ function deleteContentsRecursively(event, folderPath) {
     const success = deleteFolderRecursive(folderPath);
     
     if (success) {
-      event.reply('log-message', 'Successfully cleared Teams cache');
+      event.reply('log-message', 'Successfully cleared Teams LocalCache');
       event.reply('cache-cleared', true);
     } else {
-      event.reply('log-message', 'Cleared Teams cache with some errors');
+      event.reply('log-message', 'Cleared Teams LocalCache with some errors');
       event.reply('cache-cleared', true); // Still consider it successful
     }
   } catch (err) {
-    event.reply('log-message', `Error during cache clearing: ${err.message}`);
+    event.reply('log-message', `Error during LocalCache clearing: ${err.message}`);
     event.reply('cache-cleared', false);
   }
 }

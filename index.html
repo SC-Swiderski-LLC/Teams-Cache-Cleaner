@@ -67,9 +67,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>Microsoft Teams Cache Cleaner</h1>
+    <h1>Microsoft Teams LocalCache Cleaner</h1>
     <div class="description">
-      This utility clears the Microsoft Teams cache folders to help resolve common issues like:
+      This utility clears only the Microsoft Teams LocalCache folder to help resolve common issues like:
       <ul>
         <li>Sign-in problems</li>
         <li>Messages not sending</li>
@@ -80,7 +80,7 @@
     </div>
     
     <div class="path-display">
-      <div><strong>Current Teams path:</strong></div>
+      <div><strong>Current Teams LocalCache path:</strong></div>
       <div id="pathValue"></div>
     </div>
     
@@ -98,7 +98,7 @@
     </div>
     
     <div class="buttons">
-      <button id="cleanBtn">Clean Teams Cache</button>
+      <button id="cleanBtn">Clean Teams LocalCache</button>
       <button id="exitBtn">Exit</button>
     </div>
   </div>
@@ -117,8 +117,8 @@
     const exitBtn = document.getElementById('exitBtn');
     
     // Set cache path
-    const teamsCachePath = path.join(os.homedir(), 'AppData', 'Local', 'Packages', 'MSTeams_8wekyb3d8bbwe');
-    pathValue.textContent = teamsCachePath;
+    const teamsLocalCachePath = path.join(os.homedir(), 'AppData', 'Local', 'Packages', 'MSTeams_8wekyb3d8bbwe', 'LocalCache');
+    pathValue.textContent = teamsLocalCachePath;
     
     // Add log message
     function addLog(message) {
@@ -171,19 +171,19 @@
       }
       
       // Proceed to cache clearing
-      updateStatus('Clearing Teams cache directory...', 40);
+      updateStatus('Clearing Teams LocalCache directory...', 40);
       ipcRenderer.send('clear-cache');
     });
     
     ipcRenderer.on('cache-cleared', (event, success) => {
       if (success) {
-        updateStatus('Cache clearing completed successfully!', 100);
+        updateStatus('LocalCache clearing completed successfully!', 100);
         // Show message box
-        alert('Teams cache has been cleared successfully.\n\nYou can now restart Teams and sign in again.');
+        alert('Teams LocalCache has been cleared successfully.\n\nYou can now restart Teams and sign in again.');
       } else {
-        updateStatus('Cache clearing completed with some issues.', 100);
+        updateStatus('LocalCache clearing completed with some issues.', 100);
         // Show warning
-        alert('The Teams cache was cleared, but there may have been some issues.\n\nPlease check the log for details.');
+        alert('The Teams LocalCache was cleared, but there may have been some issues.\n\nPlease check the log for details.');
       }
       
       // Re-enable button
